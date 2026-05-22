@@ -10,8 +10,9 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
+
+
+
 
 #define SHUTDOWN_ON			0x00
 #define SHUTDOWN_OFF		0x01

@@ -4,13 +4,19 @@
  *  Created on: Dec 26, 2024
  *      Author: Vedant Bhale
  */
+#include <stdint.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 
+#include <util/delay.h>
+#include <avr/pgmspace.h>
 
 #include "max7219.h"
 #include "Fonts.h"
 #include "spi.h"
-#include <util/delay.h>
-#include <avr/pgmspace.h>
+#include "buttons.h"
+
 
 
 #define CS_LOW()			spi_setCS();
@@ -139,7 +145,7 @@ void max7219_scrollText(MAX7219_CONFIG *config, const char *str, uint8_t scroll_
 		max7219_updateDisplay(config);
 		delay(50 * scroll_speed);
 
-	}while(freq);
+	}while(freq && (button_queueIsEmpty() == true));
 
 	max7219_clearDisplay(config);
 	max7219_updateDisplay(config);

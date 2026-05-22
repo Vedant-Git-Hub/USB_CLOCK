@@ -47,6 +47,8 @@ bool button_is_pressed(E_BUTTON_TYPE btn);
 void button_queueInit(void);
 bool button_QueueAdd(E_BUTTON_TYPE btn_type, E_BUTTON_STATE btn_state);
 bool button_QueueRead(T_BTN_QUEUE_INFO *ret);
+bool button_queueIsEmpty(void);
+bool button_queueIsFull(void);
 
 
 #endif

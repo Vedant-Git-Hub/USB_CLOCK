@@ -11,10 +11,6 @@
 
 
 
-static bool button_queueIsEmpty(void);
-static bool button_queueIsFull(void);
-
-
 
 static uint8_t prev_btn_state = 0;
 static callback_func_ptr button_callback_func = NULL;
@@ -154,7 +150,7 @@ bool button_QueueRead(T_BTN_QUEUE_INFO *ret)
     return 0;
 }
 
-static bool button_queueIsEmpty()
+bool button_queueIsEmpty()
 {
     if(btn_queue_hnd.wr_idx == 0 && btn_queue_hnd.rd_idx == 0)
     {
@@ -168,7 +164,7 @@ static bool button_queueIsEmpty()
     return btn_queue_hnd.queue_is_empty;
 }
 
-static bool button_queueIsFull()
+bool button_queueIsFull()
 {
     if(btn_queue_hnd.wr_idx == BTN_QUEUE_SIZE && btn_queue_hnd.rd_idx == 0)
     {
