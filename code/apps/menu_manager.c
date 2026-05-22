@@ -26,7 +26,7 @@ typedef enum{
 
 
 static void menu_set(void);
-
+static void menu_setBrightness(void);
 
 
 extern MAX7219_CONFIG *config;
@@ -46,6 +46,7 @@ void app_menuHandler()
     char rtc_buff[10];
     char *menu_options[MAX_MENU_STATES] = {
         "SET",
+        "BRT",
         "EXT"
     };
 
@@ -84,6 +85,12 @@ void app_menuHandler()
 
             case SET:
             menu_set();
+            menu_state = sub_menu_state;
+            sub_menu_state = IDLE;
+            break;
+
+            case BRT:
+            menu_setBrightness();
             menu_state = sub_menu_state;
             sub_menu_state = IDLE;
             break;
@@ -268,4 +275,37 @@ static void menu_set()
 
     }
     
+}
+
+static void menu_setBrightness()
+{
+    char rtc_buff[10];
+    bool in_brt_menu = true;
+    static uint8_t brightness = 0;
+    T_BTN_QUEUE_INFO btn_info;
+
+    while(in_brt_menu)
+    {
+        if(button_QueueRead(&btn_info))
+        {
+            if(btn_info.btn_type == UP_BTN)
+            {
+                brightness = (brightness + 1) % (MAX_INTENSITY + 1);
+                max7219_intensity(config, brightness);
+            }
+            if(btn_info.btn_type == SEL_BTN)
+            {
+                in_brt_menu = false;
+                max7219_intensity(config, brightness);
+            }
+            if(btn_info.btn_type == DOWN_BTN)
+            {
+                brightness = (brightness == 0) ? MAX_INTENSITY : (brightness - 1);
+                max7219_intensity(config, brightness);
+            }
+        }
+        
+        sprintf(rtc_buff, "BT%02d", brightness);
+        max7219_staticText(config, rtc_buff, 1);
+    }
 }
