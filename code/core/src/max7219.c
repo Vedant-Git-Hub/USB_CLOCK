@@ -38,11 +38,26 @@
 #define DISP_TEST			0x0F
 
 
+typedef struct{
+	uint8_t curr_bit_pos;
+	uint16_t curr_ind;
+	uint8_t space_count;
+}T_SCROLL_CONFIG;
+
+
 
 static void max7219_writeReg(MAX7219_CONFIG *, uint8_t, uint8_t, uint8_t);
 static bool max7219_copyAlphabet(MAX7219_CONFIG *, const char *, uint16_t, SHIFT_DIR);
 static void max7219_shiftDisplay(MAX7219_CONFIG *, SHIFT_DIR);
 static void delay(uint32_t);
+
+
+
+static T_SCROLL_CONFIG scroll_config = {
+	0, 0, 0
+};
+
+
 
 
 MAX7219_CONFIG* max7219_init(uint8_t height, uint8_t width)
@@ -133,6 +148,14 @@ void max7219_scrollText(MAX7219_CONFIG *config, const char *str, uint8_t scroll_
 
 	do
 	{
+		if(!button_queueIsEmpty())
+		{	
+			scroll_config.curr_bit_pos = 0;
+			scroll_config.curr_ind = 0;
+			scroll_config.space_count = 0;
+			break;
+		}
+
 		round_complete = max7219_copyAlphabet(config, str, str_len, dir);
 
 		if(round_complete)
@@ -145,7 +168,14 @@ void max7219_scrollText(MAX7219_CONFIG *config, const char *str, uint8_t scroll_
 		max7219_updateDisplay(config);
 		delay(50 * scroll_speed);
 
-	}while(freq && (button_queueIsEmpty() == true));
+	}while(freq);
+
+	if(!button_queueIsEmpty())
+	{
+		scroll_config.curr_bit_pos = 0;
+		scroll_config.curr_ind = 0;
+		scroll_config.space_count = 0;
+	}
 
 	max7219_clearDisplay(config);
 	max7219_updateDisplay(config);
@@ -289,18 +319,15 @@ static void max7219_shiftDisplay(MAX7219_CONFIG *config, SHIFT_DIR dir)
 
 static bool max7219_copyAlphabet(MAX7219_CONFIG *config, const char *str, uint16_t str_len, SHIFT_DIR dir)
 {
-	static uint8_t curr_bit_pos = 0;
-	static uint16_t curr_ind = 0;
 	uint8_t disp_num;
 	char *alph;
 	char alph_data[8];
-	static uint8_t space_count = 0;
 
 
-	alph = (char *) pgm_read_word(&Alphabets[(uint8_t)str[curr_ind]]);
+	alph = (char *) pgm_read_word(&Alphabets[(uint8_t)str[scroll_config.curr_ind]]);
 	memcpy_P(alph_data, alph, 8);
 
-	if(curr_ind <= str_len - 1)
+	if(scroll_config.curr_ind <= str_len - 1)
 	{
 
 		for(uint8_t row_num = 0; row_num < 8; row_num++)
@@ -308,30 +335,30 @@ static bool max7219_copyAlphabet(MAX7219_CONFIG *config, const char *str, uint16
 			if(dir == RTL)
 			{
 				disp_num = config->total_matrix - 1;
-				config->display_buffer[(disp_num * 8) + row_num] |= (alph_data[row_num] >> (6 - curr_bit_pos)) & 0x01;
+				config->display_buffer[(disp_num * 8) + row_num] |= (alph_data[row_num] >> (6 - scroll_config.curr_bit_pos)) & 0x01;
 			}
 			else
 			{
 				disp_num = 0;
-				config->display_buffer[(disp_num * 8) + row_num] |= ((alph_data[row_num] >> (curr_bit_pos)) & 0x01) << 0x07;
+				config->display_buffer[(disp_num * 8) + row_num] |= ((alph_data[row_num] >> (scroll_config.curr_bit_pos)) & 0x01) << 0x07;
 			}
 		}
 
-		curr_bit_pos++;
-		if(curr_bit_pos > 6)
+		scroll_config.curr_bit_pos++;
+		if(scroll_config.curr_bit_pos > 6)
 		{
-			curr_bit_pos = 0;
-			curr_ind++;
+			scroll_config.curr_bit_pos = 0;
+			scroll_config.curr_ind++;
 		}
 
 	}
 	else
 	{
-		space_count++;
-		if(space_count > config->total_matrix * 8)
+		scroll_config.space_count++;
+		if(scroll_config.space_count > config->total_matrix * 8)
 		{
-			space_count = 0;
-			curr_ind = 0;
+			scroll_config.space_count = 0;
+			scroll_config.curr_ind = 0;
 			return true;
 		}
 	}
