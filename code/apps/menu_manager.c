@@ -338,6 +338,6 @@ static void menu_getTemperature()
                 }
         }
 
-        max7219_staticText(config, temp_buff, 3);
+        max7219_staticText(config, temp_buff, 5);
     }
 }
