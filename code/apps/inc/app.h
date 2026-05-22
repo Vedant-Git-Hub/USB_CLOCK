@@ -17,6 +17,7 @@ MAX_CLK_STATES
 typedef enum{
 SET = 0,
 BRT,
+TEM,
 EXT,
 MAX_MENU_STATES,
 IDLE

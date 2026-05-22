@@ -30,5 +30,6 @@ bool ds3231_init(void);
 bool ds3231_readTimeStamp(RTC_TIME *);
 bool ds3231_writeTimeStamp(RTC_TIME *);
 const char *ds3231_getDayOfWeek(uint8_t );
+void ds3231_getTemperature(char *buff);
 
 #endif /* INC_DS3231_H_ */

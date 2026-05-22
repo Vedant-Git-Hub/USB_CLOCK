@@ -27,6 +27,7 @@ typedef enum{
 
 static void menu_set(void);
 static void menu_setBrightness(void);
+static void menu_getTemperature(void);
 
 
 extern MAX7219_CONFIG *config;
@@ -47,6 +48,7 @@ void app_menuHandler()
     char *menu_options[MAX_MENU_STATES] = {
         "SET",
         "BRT",
+        "TEM",
         "EXT"
     };
 
@@ -91,6 +93,12 @@ void app_menuHandler()
 
             case BRT:
             menu_setBrightness();
+            menu_state = sub_menu_state;
+            sub_menu_state = IDLE;
+            break;
+
+            case TEM:
+            menu_getTemperature();
             menu_state = sub_menu_state;
             sub_menu_state = IDLE;
             break;
@@ -307,5 +315,29 @@ static void menu_setBrightness()
         
         sprintf(rtc_buff, "BT%02d", brightness);
         max7219_staticText(config, rtc_buff, 1);
+    }
+}
+
+static void menu_getTemperature()
+{
+    T_BTN_QUEUE_INFO btn_info;
+    bool in_temp_menu = true;
+    char temp_buff[10];
+
+    ds3231_getTemperature(temp_buff);
+
+    while(in_temp_menu)
+    {
+        if(button_QueueRead(&btn_info))
+        {
+            if((btn_info.btn_type == UP_BTN) || 
+                (btn_info.btn_type == SEL_BTN) ||
+                (btn_info.btn_type == DOWN_BTN))
+                {
+                    in_temp_menu = false;
+                }
+        }
+
+        max7219_staticText(config, temp_buff, 3);
     }
 }

@@ -8,24 +8,25 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 #include "i2c.h"
 #include "ds3231.h"
 
 
-#define DS3231_ADDR		0xD0
+#define DS3231_ADDR				0xD0
 
-#define SEC_REG_ADDR		0x00
-#define MIN_REG_ADDR		0x01
-#define HR_REG_ADDR		0x02
-#define DAY_REG_ADDR		0x03
-#define DAT_REG_ADDR		0x04
-#define MON_REG_ADDR		0x05
-#define YR_REG_ADDR		0x06
-#define CTRL_REG_ADDR		0x0E
-#define CTRL_STAT_REG_ADDR	0x0F
-#define TEMP_MSB_ADDR		0x11
-#define TEMP_LSB_ADDR		0x12
+#define SEC_REG_ADDR			0x00
+#define MIN_REG_ADDR			0x01
+#define HR_REG_ADDR				0x02
+#define DAY_REG_ADDR			0x03
+#define DAT_REG_ADDR			0x04
+#define MON_REG_ADDR			0x05
+#define YR_REG_ADDR				0x06
+#define CTRL_REG_ADDR			0x0E
+#define CTRL_STAT_REG_ADDR		0x0F
+#define TEMP_MSB_ADDR			0x11
+#define TEMP_LSB_ADDR			0x12
 
 
 static uint8_t ds3231_bcdToHex(uint8_t );
@@ -94,6 +95,24 @@ bool ds3231_writeTimeStamp(RTC_TIME *rtc)
 	tw_master_transmit(DS3231_ADDR, data, sizeof(data), false);
 
 	return 1;
+}
+
+void ds3231_getTemperature(char *buff)
+{
+	uint8_t data[2];
+	uint8_t set_reg_add;
+
+	set_reg_add =  TEMP_MSB_ADDR;
+
+	tw_master_transmit(DS3231_ADDR, &set_reg_add, sizeof(set_reg_add), true);
+
+	tw_master_receive(DS3231_ADDR, data, sizeof(data));
+
+	if(buff != NULL)
+	{
+		sprintf(buff, "%dC", (data[0] & 0x7F));
+	}
+	
 }
 
 const char *ds3231_getDayOfWeek(uint8_t dow)
