@@ -15,10 +15,7 @@ MAX_CLK_STATES
 }E_CLK_STATES;
 
 typedef enum{
-CLK = 0,
-DAY,
-DATE,
-SET,
+SET = 0,
 EXT,
 MAX_MENU_STATES,
 IDLE

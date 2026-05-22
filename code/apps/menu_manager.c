@@ -25,9 +25,6 @@ typedef enum{
 
 
 
-static void menu_clk(char *rtc_buff);
-static void menu_day(void);
-static void menu_date(char *rtc_buff);
 static void menu_set(void);
 
 
@@ -43,14 +40,11 @@ extern volatile E_CLK_STATES clk_state;
 void app_menuHandler()
 {
     bool in_menu = true;
-    int8_t menu_state = CLK;
+    int8_t menu_state = SET;
     int8_t sub_menu_state = IDLE;
     T_BTN_QUEUE_INFO btn_info;
     char rtc_buff[10];
     char *menu_options[MAX_MENU_STATES] = {
-        "CLK",
-        "DAY",
-        "DAT",
         "SET",
         "EXT"
     };
@@ -88,24 +82,6 @@ void app_menuHandler()
             case IDLE:
             break;
 
-            case CLK:
-            menu_clk(rtc_buff);
-            menu_state = sub_menu_state;
-            sub_menu_state = IDLE;
-            break;
-
-            case DAY:
-            menu_day();
-            menu_state = sub_menu_state;
-            sub_menu_state = IDLE;
-            break;
-
-            case DATE:
-            menu_date(rtc_buff);
-            menu_state = sub_menu_state;
-            sub_menu_state = IDLE;
-            break;
-
             case SET:
             menu_set();
             menu_state = sub_menu_state;
@@ -121,24 +97,6 @@ void app_menuHandler()
         }
 
     }
-}
-
-static void menu_clk(char *rtc_buff)
-{
-    sprintf(rtc_buff, "%02d:%02d", rtc_handler.rtc_rd.hr, rtc_handler.rtc_rd.min);
-    max7219_scrollText(config, rtc_buff, 2, RTL, 1);
-}
-
-static void menu_day()
-{
-    max7219_staticText(config, ds3231_getDayOfWeek(rtc_handler.rtc_rd.day_of_week), 5);
-    _delay_ms(1000);
-}
-
-static void menu_date(char *rtc_buff)
-{
-    sprintf(rtc_buff, "%02d/%02d/%02d", rtc_handler.rtc_rd.date, rtc_handler.rtc_rd.month, rtc_handler.rtc_rd.year);
-    max7219_scrollText(config, rtc_buff, 2, RTL, 1);
 }
 
 static void menu_set()

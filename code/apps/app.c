@@ -19,7 +19,7 @@
 #define MATRIX_HEIGHT		8
 #define MATRIX_WIDTH		32
 
-#define BTN_DEBOUNCE_MS		20
+#define BTN_DEBOUNCE_MS		30
 
 #define RTC_READ_FREQ_MS    100
 
