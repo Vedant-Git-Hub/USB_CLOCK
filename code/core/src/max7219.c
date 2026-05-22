@@ -22,7 +22,7 @@
 #define CS_LOW()			spi_setCS();
 #define CS_HIGH()			spi_resetCS();
 
-#define NO_OPERATION			0x00
+#define NO_OPERATION		0x00
 #define COLUMN_0			0x01
 #define COLUMN_1			0x02
 #define COLUMN_2			0x03

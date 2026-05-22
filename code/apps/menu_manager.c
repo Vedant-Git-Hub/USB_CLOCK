@@ -116,7 +116,7 @@ void app_menuHandler()
             sub_menu_state = IDLE;
             menu_state = IDLE;
             in_menu = false;
-            clk_state = DEFAULT;
+            clk_state = DEFAULT_CLK;
             break;
         }
 

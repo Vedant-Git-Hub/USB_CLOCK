@@ -25,7 +25,9 @@
 
 
 
-static void app_defaultHandler(void);
+static void app_defaultClkHandler(void);
+static void app_defaultDowHandler(void);
+static void app_defaultDateHandler(void);
 static void button_callbackHandler(E_BUTTON_TYPE button_type, E_BUTTON_STATE button_state);
 static void timer_callbackHandler();
 
@@ -70,21 +72,7 @@ int8_t app_init()
 
 	sei(); //GLOBAL interrupt enable
 
-    clk_state = DEFAULT;
-
-	// RTC_TIME rtc_wr = {
-	// 	  0,
-	// 	  43,
-	// 	  17,
-	// 	  1,
-	// 	  18,
-	// 	  6,
-	// 	  26,
-	// 	  0,
-	// 	  0
-	// };
-
-	// ds3231_writeTimeStamp(&rtc_wr);
+    clk_state = DEFAULT_CLK;
 
 	return 1;
 }
@@ -93,57 +81,44 @@ void app_run()
 {
 	while(1)
 	{
-		//  char debug_buff[3];
-
-
-		// sprintf(debug_buff, "%d", state_machine);
-    	// max7219_staticText(config, debug_buff, 1);
-
-		// sprintf(rtc_buff, "%d", rtc_rd.sec);
-    	// max7219_staticText(config, rtc_buff, 16);
         T_BTN_QUEUE_INFO btn_info;
 
         if(button_QueueRead(&btn_info))
         {
             if(btn_info.btn_type == SEL_BTN)
             {
-                clk_state = (clk_state == DEFAULT) ? MENU : DEFAULT;  
+                clk_state = (clk_state == DEFAULT_CLK) ? MENU : DEFAULT_CLK;  
+            }
+
+			if((btn_info.btn_type == UP_BTN) || (btn_info.btn_type == DOWN_BTN))
+            {
+				clk_state++;
+				clk_state = (clk_state == MENU) ? DEFAULT_CLK : clk_state;
             }
         }
 
         switch(clk_state)
         {
-            case DEFAULT:
-            app_defaultHandler();
+            case DEFAULT_CLK:
+            app_defaultClkHandler();
+            break;
+
+			case DEFAULT_DOW:
+            app_defaultDowHandler();
+            break;
+
+			case DEFAULT_DATE:
+            app_defaultDateHandler();
             break;
 
             case MENU:
             app_menuHandler();
             break;
         }
-
-		// switch(state_machine)
-		// {
-		// 	case 1:
-		// 		sprintf(rtc_buff, "%02d:%02d", rtc_rd.hr, rtc_rd.min);
-	 	// 		max7219_scrollText(config, rtc_buff, 2, RTL, 1);
-		// 	break;
-
-		// 	case 2:
-		// 		max7219_staticText(config, ds3231_getDayOfWeek(rtc_rd.day_of_week), 5);
-	  	// 		_delay_ms(1000);
-		// 	break;
-
-		// 	case 3:
-		// 		sprintf(rtc_buff, "%02d/%02d/%02d", rtc_rd.date, rtc_rd.month, rtc_rd.year);
-	  	// 		max7219_scrollText(config, rtc_buff, 2, RTL, 1);
-		// 	break;
-		// }
-
 	}    
 }
 
-static void app_defaultHandler()
+static void app_defaultClkHandler()
 {
     char rtc_buff[10];
 
@@ -151,6 +126,31 @@ static void app_defaultHandler()
 	max7219_scrollText(config, rtc_buff, 2, RTL, 1);
 }
 
+static void app_defaultDowHandler()
+{
+	static uint32_t prev_time = 0;
+	max7219_staticText(config, ds3231_getDayOfWeek(rtc_handler.rtc_rd.day_of_week), 5);
+
+	if(prev_time == 0)
+	{
+		prev_time = timer_getTicks();
+	}
+
+	if((timer_getTicks() - prev_time) >= 1500)
+	{
+		clk_state = DEFAULT_CLK;
+		prev_time = 0;
+	}
+}
+
+static void app_defaultDateHandler()
+{
+    char rtc_buff[10];
+
+    sprintf(rtc_buff, "%02d/%02d/%02d", rtc_handler.rtc_rd.date, rtc_handler.rtc_rd.month, rtc_handler.rtc_rd.year);
+    max7219_scrollText(config, rtc_buff, 2, RTL, 1);
+	clk_state = DEFAULT_CLK;
+}
 
 static void button_callbackHandler(E_BUTTON_TYPE button_type, E_BUTTON_STATE button_state)
 {
